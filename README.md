@@ -80,18 +80,19 @@ Running it several times does no harm; files that are already patched are skippe
 bash audit.sh
 ```
 
-It lists everything under `/var/www/html` that still makes the browser load a file from another host (read-only; it doesn't change anything). This is useful for add-on modules that aren't in this repo.
+It lists what under `/var/www/html` still makes the browser load a file from another host (read-only; it doesn't change anything). This is useful for add-on modules that aren't in this repo.
 
-After the install, these can still appear on an Issabel 5 server, and **none of them is actually loaded**:
+By default it only shows what needs a look. References that provably never load are hidden:
 
-| What | Why it isn't loaded |
+| Hidden when | Example on an Issabel 5 server |
 |---|---|
-| `cdn.amcharts.com` in `sec_geoip_map/.../map.tpl` | inside an HTML comment; the module uses its own local copy |
-| `connect.soundcloud.com` in `amplitude.min.js` | only if a SoundCloud `client_id` is set, and Monitoring doesn't set one |
-| `cdnjs.../pdfobject` in `8_jspdf.min.js` | only for the `pdfobjectnewwindow` output mode, which Issabel doesn't use |
-| `youtube.com` in `sweetalert2.min.js` (and its copy under `admin/modules/framework/`) | an example string inside the library |
-| `player.vimeo.com` in `fop2/js/mediaelement.min.js` | only when a Vimeo video is played |
-| `github.com` and `githubassets.com` in `dashboard/applets/IssabelNetwork/js/toastr.js` and `tpl/css/toastr.css` | these two files are saved GitHub web pages, not the toastr library; the browser reads them as JS/CSS, so the HTML tags inside them load nothing |
+| the address is inside an HTML comment (IE conditional comments like `<!--[if lt IE 9]>` are not hidden, because IE does load them) | the amCharts lines in `sec_geoip_map/.../map.tpl` |
+| a `.js` or `.css` file is really a saved HTML page, so the browser loads nothing from it | `toastr.js` and `toastr.css` of the dashboard's IssabelNetwork applet, which are saved GitHub pages |
+| a known library code path that Issabel and FOP2 never take | SweetAlert2 (example text), jsPDF (`pdfobjectnewwindow`), AmplitudeJS (SoundCloud), MediaElement.js (Vimeo) |
+
+At the end it prints how many were hidden and why. `bash audit.sh --all` also lists them, each with its reason.
+
+The exit status is 0 when nothing needs a look and 1 otherwise, so it can be used in a script or cron job.
 
 ## Uninstall
 
