@@ -74,17 +74,29 @@ HOSTS_RE='fonts\.googleapis\.com|fonts\.gstatic\.com|ajax\.googleapis\.com|maxcd
 ere_escape()  { printf '%s' "$1" | sed 's,[][\\.*^$+?(){}|#/],\\&,g'; }
 repl_escape() { printf '%s' "$1" | sed 's/[\\&#]/\\&/g'; }
 
-# Google Fonts, handled by pattern so any variant of the Noto Sans URL matches
-# (css and css2 API, any weights, &display=swap, &amp;), plus the
-# <link rel="preconnect|dns-prefetch"> hints to the CDN hosts, which are
-# dropped: the whole line when it is the only thing on it, otherwise the tag.
+# Google Fonts families, as written in the URL, and the assets/ folder with
+# their local copy. Matched by pattern, so any variant of the URL works (css
+# and css2 API, any weights, &display=swap, &amp;, in href="..." or
+# @import url(...)). A longer family such as "Ubuntu Mono" does not match.
+GOOGLE_FONTS=(
+  'Noto+Sans'        noto-sans         # Issabel templates, IssabelPBX admin
+  'Source+Sans+Pro'  source-sans-pro   # FOP2: fop2/css/bootstrap.min.css
+  'Ubuntu'           ubuntu            # FOP2: fop2/css/bootstrap-theme.css
+)
+
+# <link rel="preconnect|dns-prefetch"> hints to the CDN hosts are dropped: the
+# whole line when it is the only thing on it, otherwise just the tag.
 HINT_HOSTS='(fonts\.googleapis|fonts\.gstatic|ajax\.googleapis|maxcdn\.bootstrapcdn|oss\.maxcdn)\.com'
 HINT_TAG="<link[^>]*(preconnect|dns-prefetch)[^>]*${HINT_HOSTS}[^>]*>|<link[^>]*${HINT_HOSTS}[^>]*(preconnect|dns-prefetch)[^>]*>"
 SED_SCRIPT="
 /^[[:space:]]*(${HINT_TAG})[[:space:]]*$/d
 s#${HINT_TAG}##g
-s#(https?:)?//fonts\.googleapis\.com/css2?\?family=Noto\+Sans(:[^\"'&) ]*)?(&[^\"') ]*)?([\"') ])#$A/noto-sans/noto-sans.css\4#g
 "
+for ((i = 0; i < ${#GOOGLE_FONTS[@]}; i += 2)); do
+  family=$(ere_escape "${GOOGLE_FONTS[i]}")
+  dir=${GOOGLE_FONTS[i+1]}
+  SED_SCRIPT+="s#(https?:)?//fonts\.googleapis\.com/css2?\?family=$family(:[^\"'&) ]*)?(&[^\"') ]*)?([\"') ])#$A/$dir/$dir.css\4#g"$'\n'
+done
 for ((i = 0; i < ${#RULES[@]}; i += 3)); do
   match=$(ere_escape "${RULES[i+1]}")
   [[ ${RULES[i]} == url ]] && match="(https?:)?//$match"

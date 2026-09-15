@@ -21,6 +21,8 @@
 | `admin/views/header.php` | Noto Sans + Font Awesome 4.7 + jQuery (اگر تنظیم CDN گوگل روشن باشد) | محلی |
 | `admin/views/issabelpbx.php` | jQuery UI 1.8.9 از گوگل | محلی |
 | `admin/views/footer.php` | Chrome Frame (فقط Internet Explorer) | محلی |
+| `fop2/css/bootstrap.min.css` | فونت Source Sans Pro از Google Fonts (پنل FOP2) | محلی |
+| `fop2/css/bootstrap-theme.css` | فونت Ubuntu از Google Fonts (پنل FOP2) | محلی |
 
 - فایل‌ها در `/var/www/html/issabel5-local-assets/` قرار می‌گیرند و منبع و sha256 هر کدام در [`assets/SOURCES.txt`](assets/SOURCES.txt) ثبت شده است.
 - دامنه‌ی `oss.maxcdn.com` صاحب جدید دارد و الان نسخه‌ی دیگری از html5shiv می‌دهد، برای همین نسخه‌ی درست از cdnjs دانلود شده است.
@@ -56,9 +58,17 @@ bash install.sh
 
 > اگر سرور به GitHub هم دسترسی ندارد، ریپو را جای دیگری به‌صورت zip دانلود کنید، با `scp` روی سرور بریزید و `install.sh` را از داخل آن اجرا کنید.
 
-## بعد از آپدیت ایزابل
+## آپدیت همین پکیج
 
-آپدیت پکیج‌هایی مثل `issabel-framework`، `issabel-reports` یا `issabelPBX` فایل‌های اصلی و لینک‌های CDN را برمی‌گرداند. دوباره اجرا کنید:
+```bash
+cd issabel5-local-assets
+git pull
+bash install.sh
+```
+
+## بعد از آپدیت ایزابل یا FOP2
+
+آپدیت پکیج‌هایی مثل `issabel-framework`، `issabel-reports` یا `issabelPBX`، یا آپگرید FOP2، فایل‌های اصلی و لینک‌های CDN را برمی‌گرداند. دوباره اجرا کنید:
 
 ```bash
 bash install.sh
@@ -74,14 +84,16 @@ bash audit.sh
 
 هر چیزی را زیر `/var/www/html` که هنوز باعث می‌شود مرورگر فایلی را از هاست دیگری بارگذاری کند فهرست می‌کند (فقط می‌خواند و چیزی را تغییر نمی‌دهد). برای ماژول‌های جانبی که در این ریپو نیستند مفید است.
 
-روی ایزابل ۵ دست‌نخورده فقط این موارد دیده می‌شوند و **هیچ‌کدام واقعاً بارگذاری نمی‌شوند**:
+بعد از نصب، این موارد ممکن است روی سرور ایزابل ۵ هنوز دیده شوند و **هیچ‌کدام واقعاً بارگذاری نمی‌شوند**:
 
 | چه چیزی | چرا بارگذاری نمی‌شود |
 |---|---|
 | `cdn.amcharts.com` در `sec_geoip_map/.../map.tpl` | داخل کامنت HTML است؛ ماژول از نسخه‌ی محلی خودش استفاده می‌کند |
-| `connect.soundcloud.com` در `amplitude.min.js` | فقط اگر SoundCloud تنظیم شده باشد، که ماژول Monitoring تنظیمش نمی‌کند |
-| `cdnjs.../pdfobject` در `8_jspdf.min.js` | فقط برای یک حالت خروجی PDF که ایزابل از آن استفاده نمی‌کند |
-| `youtube.com` در `sweetalert2.min.js` | یک رشته‌ی مثال داخل کتابخانه است |
+| `connect.soundcloud.com` در `amplitude.min.js` | فقط اگر `client_id` ساندکلاد تنظیم شده باشد، که ماژول Monitoring تنظیمش نمی‌کند |
+| `cdnjs.../pdfobject` در `8_jspdf.min.js` | فقط برای حالت خروجی `pdfobjectnewwindow` که ایزابل از آن استفاده نمی‌کند |
+| `youtube.com` در `sweetalert2.min.js` (و نسخه‌ی کپی آن زیر `admin/modules/framework/`) | یک رشته‌ی مثال داخل کتابخانه است |
+| `player.vimeo.com` در `fop2/js/mediaelement.min.js` | فقط وقتی یک ویدیوی Vimeo پخش شود |
+| `github.com` و `githubassets.com` در `dashboard/applets/IssabelNetwork/js/toastr.js` و `tpl/css/toastr.css` | این دو فایل صفحه‌ی ذخیره‌شده‌ی سایت GitHub هستند، نه کتابخانه‌ی toastr؛ مرورگر آن‌ها را به‌عنوان JS/CSS می‌خواند، پس تگ‌های HTML داخلشان چیزی بارگذاری نمی‌کنند |
 
 ## حذف
 
@@ -117,6 +129,8 @@ bash tools/fetch-assets.sh
 هر فایل لایسنس خودش را دارد:
 
 - Noto Sans: [OFL 1.1](assets/noto-sans/OFL.txt)
+- Source Sans Pro: [OFL 1.1](assets/source-sans-pro/OFL.txt)
+- Ubuntu: [Ubuntu Font Licence 1.0](assets/ubuntu/UFL.txt)
 - Font Awesome 4.7: فونت با OFL 1.1 و CSS با MIT
 - jQuery UI، html5shiv، respond.js و AmplitudeJS: MIT
 - Chrome Frame: BSD

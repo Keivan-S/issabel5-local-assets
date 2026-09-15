@@ -19,6 +19,8 @@ This patch puts all of those files on the server itself and points the Issabel f
 | `admin/views/header.php` | Noto Sans + Font Awesome 4.7 + jQuery (if the Google CDN setting is on) | local |
 | `admin/views/issabelpbx.php` | jQuery UI 1.8.9 from Google | local |
 | `admin/views/footer.php` | Chrome Frame (Internet Explorer only) | local |
+| `fop2/css/bootstrap.min.css` | Source Sans Pro font from Google Fonts (FOP2 panel) | local |
+| `fop2/css/bootstrap-theme.css` | Ubuntu font from Google Fonts (FOP2 panel) | local |
 
 - The files are placed in `/var/www/html/issabel5-local-assets/`, and each one's source and sha256 is recorded in [`assets/SOURCES.txt`](assets/SOURCES.txt).
 - `oss.maxcdn.com` has changed owners and now serves a different version of html5shiv, so the correct version was downloaded from cdnjs.
@@ -54,9 +56,17 @@ Refresh the browser with Ctrl+F5. In DevTools → Network there should be no req
 
 > If the server doesn't have access to GitHub either, download the repo as a zip somewhere else, copy it over with `scp`, and run `install.sh` from inside it.
 
-## After updating Issabel
+## Updating this package
 
-Updating packages such as `issabel-framework`, `issabel-reports` or `issabelPBX` brings back the original files and the CDN links. Run it again:
+```bash
+cd issabel5-local-assets
+git pull
+bash install.sh
+```
+
+## After updating Issabel or FOP2
+
+Updating packages such as `issabel-framework`, `issabel-reports` or `issabelPBX`, or upgrading FOP2, brings back the original files and the CDN links. Run it again:
 
 ```bash
 bash install.sh
@@ -72,14 +82,16 @@ bash audit.sh
 
 It lists everything under `/var/www/html` that still makes the browser load a file from another host (read-only; it doesn't change anything). This is useful for add-on modules that aren't in this repo.
 
-On a stock Issabel 5, only these appear, and **none of them is actually loaded**:
+After the install, these can still appear on an Issabel 5 server, and **none of them is actually loaded**:
 
 | What | Why it isn't loaded |
 |---|---|
 | `cdn.amcharts.com` in `sec_geoip_map/.../map.tpl` | inside an HTML comment; the module uses its own local copy |
-| `connect.soundcloud.com` in `amplitude.min.js` | only if SoundCloud is configured, and Monitoring doesn't configure it |
-| `cdnjs.../pdfobject` in `8_jspdf.min.js` | only for a PDF output mode that Issabel doesn't use |
-| `youtube.com` in `sweetalert2.min.js` | an example string inside the library |
+| `connect.soundcloud.com` in `amplitude.min.js` | only if a SoundCloud `client_id` is set, and Monitoring doesn't set one |
+| `cdnjs.../pdfobject` in `8_jspdf.min.js` | only for the `pdfobjectnewwindow` output mode, which Issabel doesn't use |
+| `youtube.com` in `sweetalert2.min.js` (and its copy under `admin/modules/framework/`) | an example string inside the library |
+| `player.vimeo.com` in `fop2/js/mediaelement.min.js` | only when a Vimeo video is played |
+| `github.com` and `githubassets.com` in `dashboard/applets/IssabelNetwork/js/toastr.js` and `tpl/css/toastr.css` | these two files are saved GitHub web pages, not the toastr library; the browser reads them as JS/CSS, so the HTML tags inside them load nothing |
 
 ## Uninstall
 
@@ -115,6 +127,8 @@ This downloads all the files again, rebuilds `assets/SOURCES.txt`, and then you 
 Each file keeps its own license:
 
 - Noto Sans: [OFL 1.1](assets/noto-sans/OFL.txt)
+- Source Sans Pro: [OFL 1.1](assets/source-sans-pro/OFL.txt)
+- Ubuntu: [Ubuntu Font Licence 1.0](assets/ubuntu/UFL.txt)
 - Font Awesome 4.7: font under OFL 1.1, CSS under MIT
 - jQuery UI, html5shiv, respond.js and AmplitudeJS: MIT
 - Chrome Frame: BSD
