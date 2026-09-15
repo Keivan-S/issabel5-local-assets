@@ -1,2 +1,3 @@
 * text=auto eol=lf
-*.woff2 binary
+# Third-party files are kept byte-for-byte as downloaded (see assets/SOURCES.txt).
+assets/** -text
