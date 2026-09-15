@@ -1,4 +1,6 @@
-# issabel5-local-assets
+# Issabel 5 Local Assets
+
+**English** | [فارسی](README.fa.md)
 
 The Issabel 5 web panel loads a number of fonts, icons and JS/CSS libraries from Google and other CDNs. If the server or the users' browsers can't reach them (or the connection is slow), pages load slowly, stall, or icons and fonts break.
 
