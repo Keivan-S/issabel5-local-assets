@@ -5,7 +5,7 @@
 #
 # A file is restored only if it is still exactly as install.sh left it. If a
 # package update replaced it since, the stock file is already back and it is
-# left alone. If it was edited by hand and still uses the local assets, it is
+# left alone. If it was edited by hand and still carries the patch, it is
 # reported and the assets stay until it is sorted out.
 #
 set -euo pipefail
@@ -15,6 +15,10 @@ STATE_DIR=${STATE_DIR:-/var/lib/issabel5-local-assets}
 A=/issabel5-local-assets
 ASSET_DIR=$WEBROOT${A}
 MANIFEST=$STATE_DIR/manifest
+
+# What install.sh leaves in the registration module, which has no asset path
+# in it to tell a patched file by.
+POPUP_OFF="['auto_popup'] = false && ("
 
 log()  { printf '%s\n' "$*"; }
 warn() { printf 'WARNING: %s\n' "$*" >&2; }
@@ -30,7 +34,7 @@ while IFS=$'\t' read -r file sum; do
   if [[ -f $file && -f $backup && $(sha256sum "$file" | cut -d' ' -f1) == "$sum" ]]; then
     cat "$backup" > "$file"
     log "restored $file"
-  elif [[ -f $file ]] && grep -qF "$A/" "$file"; then
+  elif [[ -f $file ]] && grep -qF -e "$A/" -e "$POPUP_OFF" "$file"; then
     warn "skipped  $file (edited since it was patched - fix it by hand, then run again)"
     printf '%s\t%s\n' "$file" "$sum" >> "$pending"
   else
@@ -40,7 +44,7 @@ done < "$MANIFEST"
 
 if [[ -s $pending ]]; then
   cp "$pending" "$MANIFEST"
-  warn "keeping $ASSET_DIR while the files above still use it"
+  warn "keeping $ASSET_DIR until the files above are sorted out"
   exit 1
 fi
 

@@ -27,6 +27,12 @@ This patch puts all of those files on the server itself and points the Issabel f
 - The script doesn't rely only on the table above: it scans all of `/var/www/html`, so it still finds these links if they have moved in your version.
 - Only exact addresses are replaced. Anything else is left alone, and it tells you if something remains.
 
+## Registration window
+
+Until a server is registered at `cloud.issabel.org`, Issabel opens the registration window by itself for every administrator, once per login. The patch turns that off with a one-line change in `modules/registration/index.php`.
+
+Registration itself is untouched: the **Register Server** link in the (i) menu at the top of the page still opens the same window.
+
 ## Backup
 
 Before changing any file, its original is copied to `/var/lib/issabel5-local-assets/backup/` with the same full path, e.g.:
@@ -109,7 +115,7 @@ bash uninstall.sh
 These are features that call the internet from the **server** (PHP) side, not files the browser loads. They need internet by nature:
 
 - Dashboard **News** applet (`cloud.issabel.org`): it can be turned off from Dashboard → Applet Admin.
-- The **Registration** module (`cloud.issabel.org`).
+- The **Registration** module (`cloud.issabel.org`): only its window opening by itself is turned off, see above.
 - Contact photos in the **Address Book**, which are looked up on `gravatar.com`.
 - Updating the GeoIP database (MaxMind) and installing add-ons.
 

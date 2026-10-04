@@ -1,7 +1,8 @@
 #!/usr/bin/env bash
 #
 # issabel5-local-assets: makes the Issabel 5 web UI load its fonts, icons and
-# JS/CSS libraries from the PBX itself instead of Google and other CDNs.
+# JS/CSS libraries from the PBX itself instead of Google and other CDNs. It
+# also stops the registration window from opening by itself.
 #
 #   bash install.sh             apply the patch
 #   bash install.sh --dry-run   show what would change, touch nothing
@@ -65,11 +66,21 @@ RULES=(
   # browsers without the CSS "grab" cursor. Fall back to the cursor it pairs with.
   text 'url(http://www.google.com/intl/en_ALL/mapfiles/openhand.cur),n-resize'
        'n-resize'
+  # Registration module (modules/registration/index.php): until the server is
+  # registered at cloud.issabel.org, the registration window opens by itself
+  # for every administrator, once per login. Leave it to the "Register Server"
+  # link in the (i) menu, which still opens it.
+  text "\$iRegister['auto_popup'] = ("
+       "\$iRegister['auto_popup'] = false && ("
 )
 
 # Hosts the rules above deal with; used to find candidate files and to report
 # anything from them that is still left afterwards.
 HOSTS_RE='fonts\.googleapis\.com|fonts\.gstatic\.com|ajax\.googleapis\.com|maxcdn\.bootstrapcdn\.com|oss\.maxcdn\.com|521dimensions\.com/img/|www\.google\.com/intl/en_ALL/mapfiles'
+
+# The registration rule has no host in it: its text, for finding the file. A
+# patched file no longer matches, so it is not reported as left over.
+POPUP_RE="iRegister\['auto_popup'\] = \("
 
 ere_escape()  { printf '%s' "$1" | sed 's,[][\\.*^$+?(){}|#/],\\&,g'; }
 repl_escape() { printf '%s' "$1" | sed 's/[\\&#]/\\&/g'; }
@@ -108,10 +119,11 @@ log()  { printf '%s\n' "$*"; }
 warn() { printf 'WARNING: %s\n' "$*" >&2; }
 die()  { printf 'ERROR: %s\n' "$*" >&2; exit 1; }
 
-# Text files in the web root that mention one of the hosts. Compiled Smarty
-# templates are skipped: Smarty rebuilds them once the .tpl mtime changes.
+# Text files in the web root that mention one of the hosts or open the
+# registration window. Compiled Smarty templates are skipped: Smarty rebuilds
+# them once the .tpl mtime changes.
 find_candidates() {
-  grep -rlIE "$HOSTS_RE" "$WEBROOT" \
+  grep -rlIE "$HOSTS_RE|$POPUP_RE" "$WEBROOT" \
     --include='*.tpl' --include='*.php' --include='*.html' --include='*.htm' \
     --include='*.css' --include='*.js' \
     --exclude-dir=templates_c --exclude-dir="${A#/}" 2>/dev/null || true
